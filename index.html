@@ -1,291 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Half Million Cafe — Mumbai's Finest</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet" />
-  
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Half Million Cafe</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #c5a059; --black: #0a0a0a; --white: #ffffff; --gray: #1a1a1a; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--black); color: var(--white); font-family: 'Poppins', sans-serif; }
+        header { padding: 2rem; border-bottom: 1px solid #333; text-align: center; }
+        .logo { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
+        
+        .menu-section { padding: 4rem 10%; }
+        .section-title { font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 2rem; }
+        
+        .menu-tabs { display: flex; gap: 2rem; margin-bottom: 3rem; border-bottom: 1px solid #333; }
+        .menu-tab { background: none; border: none; color: #888; font-size: 1.2rem; padding: 1rem 0; cursor: pointer; transition: 0.3s; }
+        .menu-tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+        
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+        .menu-item { background: var(--gray); padding: 1.5rem; border-radius: 8px; border: 1px solid #333; transition: 0.3s; }
+        .menu-item:hover { border-color: var(--gold); transform: translateY(-5px); }
+        .item-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+        .item-name { font-weight: 600; font-size: 1.1rem; }
+        .item-price { color: var(--gold); font-weight: 600; }
+        .item-desc { font-size: 0.9rem; color: #888; margin-bottom: 1rem; }
+        
+        .btn-add { width: 100%; background: none; border: 1px solid var(--gold); color: var(--gold); padding: 0.6rem; cursor: pointer; transition: 0.3s; }
+        .btn-add:hover { background: var(--gold); color: var(--black); }
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --black: #000000; --black2: #0A0A0A; --black3: #111111; --black4: #1A1A1A;
-      --white: #FFFFFF; --white2: #F5F5F5; --white5: #999999; --gold: #C9A84C;
-    }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Outfit', sans-serif; background: var(--black); color: var(--white); overflow-x: hidden; }
-    
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 20px 5vw; transition: 0.4s; }
-    nav.scrolled { background: rgba(0,0,0,0.97); padding: 14px 5vw; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .nav-logo { font-family: 'Bebas Neue', cursive; font-size: 26px; letter-spacing: 4px; color: var(--white); text-decoration: none; }
-    .nav-logo span { color: var(--gold); }
-    .nav-center { display: flex; gap: 36px; list-style: none; }
-    .nav-center a { color: var(--white); text-decoration: none; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
-    .cart-btn { background: var(--white); color: var(--black); border: none; padding: 10px 20px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    
-    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--white); color: var(--black); padding: 14px 28px; z-index: 500; opacity: 0; transition: 0.3s; box-shadow: 0 8px 40px rgba(0,0,0,0.5); }
-    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    
-    section { padding: 100px 5vw; }
-    .s-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 5vw, 70px); margin-bottom: 40px; }
-    
-    .menu-tabs { display: flex; gap: 20px; margin-bottom: 30px; }
-    .menu-tab { background: transparent; color: var(--white5); border: none; font-size: 18px; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid transparent; }
-    .menu-tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
-    
-    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
-    .menu-card { background: var(--black2); padding: 32px; border: 1px solid #222; }
-    .add-btn { background: var(--white); border: none; padding: 10px 18px; font-weight: 700; cursor: pointer; transition: 0.3s; }
-    .add-btn:hover { background: var(--gold); }
-
-    /* Reservation Form Styling */
-    .res-form { max-width: 600px; display: grid; gap: 20px; }
-    .res-form input, .res-form select { background: var(--black2); border: 1px solid #333; color: #fff; padding: 15px; width: 100%; }
-    .res-btn { background: var(--gold); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; }
-
-    #hero { min-height: 100vh; display: flex; align-items: center; padding: 120px 5vw; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=2070') center/cover; }
-    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px, 8vw, 90px); line-height: 1.1; }
-    
-    .cart-sidebar { position: fixed; top: 0; right: -480px; bottom: 0; width: 100%; max-width: 440px; background: var(--black2); z-index: 301; transition: 0.4s; display: flex; flex-direction: column; }
-    .cart-sidebar.open { right: 0; }
-    .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: none; }
-    .cart-overlay.open { display: block; }
-    
-    .hours-row-item { padding: 10px 0; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
-  </style>
+        .empty-msg { color: #888; font-style: italic; grid-column: 1/-1; padding: 2rem 0; }
+    </style>
 </head>
 <body>
 
-<div id="toast" class="toast">Added to cart!</div>
+    <header>
+        <div class="logo">Half Million Cafe</div>
+    </header>
 
-<nav id="nav">
-  <a href="#" class="nav-logo">Half Million<span> Cafe</span></a>
-  <ul class="nav-center">
-    <li><a href="#menu">Menu</a></li>
-    <li><a href="#reservation">Reserve</a></li>
-    <li><a href="#hours">Hours</a></li>
-  </ul>
-  <div class="nav-right">
-    <button class="cart-btn" onclick="openCart()">🛒 Cart <span id="cartCount">0</span></button>
-  </div>
-</nav>
-
-<section id="hero">
-  <div class="hero-content">
-    <h1 class="hero-title">Where Every Sip Becomes a <strong>Memory</strong></h1>
-    <p style="font-size: 1.2rem; margin-top: 20px; color: var(--white5);">Specialty coffee and artisanal eats in Mumbai.</p>
-    <br><br>
-    <a href="#menu" style="background:#fff; color:#000; padding:18px 40px; text-decoration:none; font-weight:bold; letter-spacing:1px;">EXPLORE MENU</a>
-  </div>
-</section>
-
-<section id="menu">
-  <h2 class="s-title">The Menu</h2>
-  <div class="menu-tabs">
-    <button id="tab-coffee" class="menu-tab active" onclick="filterMenu('coffee')">Coffee</button>
-    <button id="tab-food" class="menu-tab" onclick="filterMenu('food')">Food</button>
-  </div>
-  <div id="menuGrid" class="menu-grid">
-      </div>
-</section>
-
-<section id="reservation">
-    <h2 class="s-title">Reserve a Table</h2>
-    <form class="res-form" id="reservationForm" onsubmit="handleReservation(event)">
-        <input type="text" id="res-name" placeholder="Your Name" required>
-        <input type="tel" id="res-phone" placeholder="Phone Number" required>
-        <input type="number" id="res-guests" placeholder="Number of Guests" min="1" max="10" required>
-        <input type="datetime-local" id="res-date" required>
-        <button type="submit" class="res-btn">BOOK NOW</button>
-    </form>
-</section>
-
-<section id="hours">
-    <h2 class="s-title">Hours</h2>
-    <div id="hoursList">
-        <div class="hours-row-item"><span>Monday</span> 8am - 10pm</div>
-        <div class="hours-row-item"><span>Tuesday</span> 8am - 10pm</div>
-        <div class="hours-row-item"><span>Wednesday</span> 8am - 10pm</div>
-        <div class="hours-row-item"><span>Thursday</span> 8am - 10pm</div>
-        <div class="hours-row-item"><span>Friday</span> 8am - 11pm</div>
-        <div class="hours-row-item"><span>Saturday</span> 9am - 11pm</div>
-        <div class="hours-row-item"><span>Sunday</span> 9am - 9pm</div>
-    </div>
-</section>
-
-<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
-<div class="cart-sidebar" id="cartSidebar">
-    <div style="padding:20px; border-bottom:1px solid #333;"><h3>Your Order</h3></div>
-    <div id="cartBody" style="flex:1; overflow-y:auto; padding:20px;"></div>
-    <div id="cartFoot" style="padding:20px; border-top:1px solid #333; display:none;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <span>Total</span><span id="cTotal">₹0</span>
+    <section class="menu-section">
+        <h2 class="section-title">The Menu</h2>
+        <div class="menu-tabs">
+            <button id="tab-coffee" class="menu-tab active" onclick="switchTab('coffee')">Coffee</button>
+            <button id="tab-food" class="menu-tab" onclick="switchTab('food')">Food</button>
         </div>
-        <button onclick="handleRazorpay()" style="width:100%; padding:15px; background:#fff; cursor:pointer; font-weight:bold;">PAY NOW</button>
-    </div>
-</div>
-
-<script>
-// ── 1. CONFIGURATION ──
-const SUPABASE_URL = 'https://jdiglozprfttehmcijtc.supabase.co'; 
-const SUPABASE_KEY = 'sb_publishable_xOGZncsDA-1YYitgam9KhA_nVLzoo_B';
-const RAZORPAY_KEY = 'rzp_test_YourKeyHere'; // Update this with your actual key
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let cart = [];
-window.menuData = { coffee: [], food: [] };
-
- // ── 2. DATABASE FUNCTIONS ──
-async function loadMenuFromSupabase() {
-    // We fetch everything from your 'menu_items' table
-    const { data, error } = await sb.from('menu_items').select('*');
-    
-    if (error) { 
-        console.error("Database Error:", error.message); 
-        return; 
-    }
-
-    console.log("Data received from Supabase:", data); // This helps us debug
-
-    window.menuData = {
-        // We use lowercase 'item.category', 'item.name', etc. to match your screenshot
-        coffee: data.filter(item => item.category && item.category.toLowerCase() === 'coffee').map(item => ({
-            id: item.id, 
-            name: item.name,   
-            price: item.price, 
-            emoji: item.emoji, 
-            desc: "Premium Roast"
-        })),
-        food: data.filter(item => item.category && item.category.toLowerCase() === 'food').map(item => ({
-            id: item.id, 
-            name: item.name, 
-            price: item.price, 
-            emoji: item.emoji, 
-            desc: "Freshly Made"
-        }))
-    };
-    
-    renderMenu('coffee'); 
-}
-
-
-async function handleReservation(event) {
-    event.preventDefault();
-    const booking = {
-        customer_name: document.getElementById('res-name').value,
-        phone: document.getElementById('res-phone').value,
-        guests: parseInt(document.getElementById('res-guests').value),
-        date_time: document.getElementById('res-date').value
-    };
-
-    const { error } = await sb.from('reservations').insert([booking]);
-    if (error) {
-        alert("Error: " + error.message);
-    } else {
-        alert("Table Reserved! We look forward to seeing you.");
-        event.target.reset();
-    }
-}
-
-// ── 3. UI FUNCTIONS ──
-function renderMenu(category) {
-    const grid = document.getElementById('menuGrid');
-    const items = window.menuData[category] || [];
-    
-    // Update active tab styling
-    document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(`tab-${category}`).classList.add('active');
-
-    if (items.length === 0) {
-        grid.innerHTML = "<p>No items found in this category.</p>";
-        return;
-    }
-
-    grid.innerHTML = items.map(item => `
-        <div class="menu-card">
-            <div style="font-size:40px; margin-bottom:15px;">${item.emoji}</div>
-            <h3 style="margin-bottom:5px;">${item.name}</h3>
-            <p style="color:#666; font-size:14px;">${item.desc}</p>
-            <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
-                <strong style="font-size:18px;">₹${item.price}</strong>
-                <button class="add-btn" onclick="addToCart('${category}', ${item.id})">+ Add</button>
+        <div id="menu-container" class="menu-grid">
             </div>
-        </div>
-    `).join('');
-}
+    </section>
 
-function addToCart(category, id) {
-    const product = window.menuData[category].find(p => p.id === id);
-    const existing = cart.find(item => item.id === id);
-    if (existing) { existing.qty++; } else { cart.push({ ...product, qty: 1 }); }
-    updateUI();
-    showToast(`${product.name} added!`);
-}
+    <script>
+        // 1. CONFIGURATION
+        const SB_URL = 'YOUR_SUPABASE_URL'; 
+        const SB_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const sb = supabase.createClient(SB_URL, SB_KEY);
 
-function updateUI() {
-    const count = cart.reduce((acc, item) => acc + item.qty, 0);
-    document.getElementById('cartCount').innerText = count;
-    const body = document.getElementById('cartBody');
-    const foot = document.getElementById('cartFoot');
-    
-    if (cart.length === 0) {
-        body.innerHTML = "<p style='color:#666;'>Your cart is empty.</p>";
-        foot.style.display = 'none';
-        return;
-    }
-    
-    foot.style.display = 'block';
-    let total = 0;
-    body.innerHTML = cart.map(item => {
-        total += item.price * item.qty;
-        return `<div style="margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:10px; display:flex; justify-content:space-between;">
-            <div>${item.name} x ${item.qty}</div>
-            <div>₹${item.price * item.qty}</div>
-        </div>`;
-    }).join('');
-    document.getElementById('cTotal').innerText = `₹${total}`;
-}
+        window.menuData = { coffee: [], food: [] };
 
-function highlightToday() {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const today = days[new Date().getDay()];
-    document.querySelectorAll('.hours-row-item').forEach(row => {
-        if (row.innerText.includes(today)) {
-            row.style.color = '#C9A84C';
-            row.style.fontWeight = 'bold';
-            row.innerHTML += " <span>← Today</span>";
+        // 2. DATABASE FUNCTIONS
+        async function loadMenuFromSupabase() {
+            try {
+                const { data, error } = await sb.from('menu_items').select('*');
+                
+                if (error) throw error;
+
+                // Organizing data and matching your lowercase Supabase columns
+                window.menuData = {
+                    coffee: data.filter(item => (item.category || "").trim().toLowerCase() === 'coffee')
+                                .map(item => ({
+                                    name: item.name || "Unknown Coffee",
+                                    price: item.price || 0,
+                                    emoji: item.emoji || "☕"
+                                })),
+                    food: data.filter(item => (item.category || "").trim().toLowerCase() === 'food')
+                              .map(item => ({
+                                  name: item.name || "Unknown Food",
+                                  price: item.price || 0,
+                                  emoji: item.emoji || "🍽️"
+                              }))
+                };
+
+                renderMenu('coffee'); // Initial load
+            } catch (err) {
+                console.error("Error loading menu:", err.message);
+                document.getElementById('menu-container').innerHTML = `<p class="empty-msg">Error loading menu. Check Supabase connection.</p>`;
+            }
         }
-    });
-}
 
-function filterMenu(cat) { renderMenu(cat); }
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.innerText = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-}
-function openCart() { 
-    document.getElementById('cartSidebar').classList.add('open'); 
-    document.getElementById('cartOverlay').classList.add('open'); 
-}
-function closeCart() { 
-    document.getElementById('cartSidebar').classList.remove('open'); 
-    document.getElementById('cartOverlay').classList.remove('open'); 
-}
+        // 3. UI FUNCTIONS
+        function renderMenu(category) {
+            const container = document.getElementById('menu-container');
+            const items = window.menuData[category];
+            
+            if (!items || items.length === 0) {
+                container.innerHTML = `<p class="empty-msg">No items found in the ${category} category. Check your Supabase rows!</p>`;
+                return;
+            }
 
-window.addEventListener('scroll', () => {
-    document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50);
-});
+            container.innerHTML = items.map(item => `
+                <div class="menu-item">
+                    <div class="item-header">
+                        <span class="item-name">${item.emoji} ${item.name}</span>
+                        <span class="item-price">₹${item.price}</span>
+                    </div>
+                    <p class="item-desc">Premium quality selection.</p>
+                    <button class="btn-add">Add to Order</button>
+                </div>
+            `).join('');
+        }
 
-// STARTUP
-document.addEventListener('DOMContentLoaded', () => {
-    loadMenuFromSupabase();
-    highlightToday();
-});
-</script>
+        function switchTab(category) {
+            document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-${category}`).classList.add('active');
+            renderMenu(category);
+        }
+
+        // START
+        loadMenuFromSupabase();
+    </script>
 </body>
 </html>
