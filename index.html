@@ -1,152 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Half Million Cafe</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #c5a059; --black: #0a0a0a; --white: #ffffff; --gray: #1a1a1a; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--black); color: var(--white); font-family: 'Poppins', sans-serif; line-height: 1.6; }
-        
-        /* Navigation */
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; border-bottom: 1px solid #333; position: sticky; top: 0; background: var(--black); z-index: 100; }
-        .logo { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.5rem; text-decoration: none; }
-        .nav-links { display: flex; gap: 20px; }
-        .nav-links a { color: white; text-decoration: none; font-size: 0.9rem; text-transform: uppercase; }
-
-        /* Sections */
-        section { padding: 4rem 10%; }
-        .section-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--gold); margin-bottom: 2rem; text-align: center; }
-
-        /* Menu */
-        .menu-tabs { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; }
-        .tab-btn { background: none; border: none; color: #888; font-size: 1.1rem; cursor: pointer; padding-bottom: 5px; }
-        .tab-btn.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .menu-card { background: var(--gray); padding: 1.5rem; border-radius: 12px; border: 1px solid #333; text-align: center; }
-        .price { color: var(--gold); font-weight: bold; display: block; margin: 10px 0; }
-        .add-btn { background: var(--gold); color: black; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600; width: 100%; }
-
-        /* Booking Form */
-        .booking-container { max-width: 600px; margin: 0 auto; background: var(--gray); padding: 2rem; border-radius: 15px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
-        .book-btn { width: 100%; padding: 15px; background: var(--gold); border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 5px; }
-
-        /* Cart Floating Button */
-        #cart-status { position: fixed; bottom: 20px; right: 20px; background: var(--gold); color: black; padding: 15px 25px; border-radius: 50px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.5); cursor: pointer; }
+        body { background: #0a0a0a; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
+        .gold { color: #c5a059; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 20px; }
+        .card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; }
+        button { background: #c5a059; border: none; padding: 10px; cursor: pointer; margin: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <nav>
-        <a href="#" class="logo">HALF MILLION CAFE</a>
-        <div class="nav-links">
-            <a href="#menu">Menu</a>
-            <a href="#reserve">Reserve</a>
-        </div>
-    </nav>
+    <h1 class="gold">HALF MILLION CAFE</h1>
+    <p>Loading your fresh menu...</p>
 
-    <section id="menu">
-        <h2 class="section-title">Experience Our Menu</h2>
-        <div class="menu-tabs">
-            <button id="btn-coffee" class="tab-btn active" onclick="showCategory('coffee')">Coffee</button>
-            <button id="btn-food" class="tab-btn" onclick="showCategory('food')">Food</button>
-        </div>
-        <div id="menu-display" class="menu-grid">
-            </div>
-    </section>
-
-    <section id="reserve">
-        <h2 class="section-title">Book A Table</h2>
-        <div class="booking-container">
-            <input type="text" id="cust-name" placeholder="Full Name">
-            <input type="tel" id="cust-phone" placeholder="Phone Number">
-            <select id="cust-guests">
-                <option value="2">2 People</option>
-                <option value="4">4 People</option>
-                <option value="6">6+ People</option>
-            </select>
-            <input type="datetime-local" id="cust-time">
-            <button class="book-btn" onclick="handleBooking()">Confirm Reservation</button>
-        </div>
-    </section>
-
-    <div id="cart-status" onclick="alert('Proceeding to checkout...')">
-        🛒 Cart: <span id="cart-count">0</span> items
+    <div>
+        <button onclick="render('coffee')">COFFEE</button>
+        <button onclick="render('food')">FOOD</button>
     </div>
 
+    <div id="menu-display" class="grid"></div>
+
     <script>
-        // REPLACE THESE WITH YOUR ACTUAL KEYS
-        const URL = 'https://jdiglozprfttehmcijtc.supabase.co';
-        const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkaWdsb3pwcmZ0dGVobWNpanRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNjQ5MzYsImV4cCI6MjA5Mjc0MDkzNn0.hTngMGloNsK0XTsBIUAvZQIzUSG65CZcWb56FFFhfmE';
+        // 1. PASTE YOUR DATA HERE
+        const URL = 'PASTE_YOUR_PROJECT_URL_HERE';
+        const KEY = 'PASTE_YOUR_LONG_EYJ_KEY_HERE';
         const sb = supabase.createClient(URL, KEY);
 
-        let cart = [];
-        window.fullMenu = { coffee: [], food: [] };
+        let databaseItems = [];
 
-        async function startApp() {
+        // 2. FETCH DATA FROM TABLE
+        async function getData() {
+            // We use 'menu_item' because that is what your table is named
             const { data, error } = await sb.from('menu_item').select('*');
+            
             if (error) {
-                console.error("Connection Error:", error);
-                document.getElementById('menu-display').innerHTML = "<p>Please check your Supabase Keys.</p>";
+                console.error("Error:", error);
+                document.getElementById('menu-display').innerHTML = "Error: " + error.message;
                 return;
             }
 
-            // This part handles both Capital and Lowercase column names
-            window.fullMenu = {
-                coffee: data.filter(i => (i.category || i.Category || "").toLowerCase().includes('coffee')),
-                food: data.filter(i => (i.category || i.Category || "").toLowerCase().includes('food'))
-            };
-
-            showCategory('coffee');
+            databaseItems = data;
+            render('coffee'); // Show coffee first
         }
 
-        function showCategory(cat) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + cat).classList.add('active');
-
+        // 3. SHOW DATA ON SCREEN
+        function render(cat) {
             const container = document.getElementById('menu-display');
-            const items = window.fullMenu[cat];
+            
+            // Filter items by category (lowercase check)
+            const filtered = databaseItems.filter(i => 
+                (i.category || "").toLowerCase() === cat
+            );
 
-            if (items.length === 0) {
-                container.innerHTML = `<p style="grid-column: 1/-1; text-align:center;">No items found in Supabase for "${cat}". Check your spelling!</p>`;
+            if (filtered.length === 0) {
+                container.innerHTML = `No items found in "${cat}". check your Supabase rows!`;
                 return;
             }
 
-            container.innerHTML = items.map(item => `
-                <div class="menu-card">
-                    <h3>${item.emoji || item.Emoji || '☕'} ${item.name || item.Name}</h3>
-                    <span class="price">₹${item.price || item.Price}</span>
-                    <button class="add-btn" onclick="addToCart('${item.name || item.Name}')">Add to Order</button>
+            container.innerHTML = filtered.map(item => `
+                <div class="card">
+                    <h2>${item.emoji || '☕'} ${item.name || 'No Name'}</h2>
+                    <p class="gold">₹${item.price || '0'}</p>
                 </div>
             `).join('');
         }
 
-        function addToCart(name) {
-            cart.push(name);
-            document.getElementById('cart-count').innerText = cart.length;
-        }
-
-        async function handleBooking() {
-            const bookingData = {
-                name: document.getElementById('cust-name').value,
-                phone: document.getElementById('cust-phone').value,
-                guests: document.getElementById('cust-guests').value,
-                date_time: document.getElementById('cust-time').value
-            };
-
-            const { error } = await sb.from('reservations').insert([bookingData]);
-            if (error) {
-                alert("Error: Make sure your table is named 'reservations'");
-            } else {
-                alert("Table Reserved Successfully!");
-            }
-        }
-
-        startApp();
+        getData();
     </script>
 </body>
 </html>
