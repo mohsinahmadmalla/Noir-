@@ -10,17 +10,96 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-  <script>
-    // ── CONFIGURATION ──
-    const SUPABASE_URL = 'https://jdiglozprfttehmcijtc.supabase.co
-';
-    const SUPABASE_KEY = 'sb_publishable_xOGZncsDA-1YYitgam9KhA_nVLzoo_B';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+   <script>
+// ── 1. CONFIGURATION (STAY CONNECTED) ──
+const SUPABASE_URL = 'https://jdiglozprfttehmcijtc.supabase.co
+'; 
+const SUPABASE_KEY = 'sb_publishable_xOGZncsDA-1YYitgam9KhA_nVLzoo_B';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Replace with your LIVE key when ready
-    const RAZORPAY_KEY = 'rzp_test_YourKeyHere'; 
-  </script>
+// ── 2. THE DATABASE FETCHER (THE "WAITER") ──
+async function loadMenuFromSupabase() {
+    console.log("Fetching menu...");
+    // This asks your 'menu_items' table for data
+    const { data, error } = await sb.from('menu_items').select('*');
 
+    if (error) {
+        console.error("Database Error:", error.message);
+        return;
+    }
+
+    // This organizes the data so the website understands it
+    // IMPORTANT: We use item.Name and item.Price because you capitalized them in Supabase
+    const organizedMenu = {
+        coffee: data.filter(item => item.Category === 'coffee').map(item => ({
+            id: item.id, name: item.Name, price: item.Price, emoji: item.Emoji, desc: "Premium Roast"
+        })),
+        food: data.filter(item => item.Category === 'food').map(item => ({
+            id: item.id, name: item.Name, price: item.Price, emoji: item.Emoji, desc: "Freshly Made"
+        }))
+    };
+
+    window.menuData = organizedMenu;
+    renderMenu('coffee'); // Show coffee by default
+}
+
+// ── 3. UI RENDERING (SHOWING THE ITEMS) ──
+function renderMenu(category) {
+    const grid = document.getElementById('menuGrid');
+    const items = window.menuData[category] || [];
+    
+    if (items.length === 0) {
+        grid.innerHTML = "<p style='padding:20px;'>No items found in this category. Add some in Supabase!</p>";
+        return;
+    }
+
+    grid.innerHTML = items.map(item => `
+        <div class="menu-card">
+            <div style="font-size:40px">${item.emoji}</div>
+            <h3>${item.name}</h3>
+            <p>${item.desc}</p>
+            <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                <strong>₹${item.price}</strong>
+                <button class="add-btn" onclick="addToCart('${category}', ${item.id})">+ Add</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ── 4. CART LOGIC ──
+let cart = [];
+function addToCart(category, id) {
+    const product = window.menuData[category].find(p => p.id === id);
+    cart.push(product);
+    document.getElementById('cartCount').innerText = cart.length;
+    showToast(`${product.name} added!`);
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── 5. STARTUP ──
+document.addEventListener('DOMContentLoaded', () => {
+    loadMenuFromSupabase(); // This starts the chain reaction
+});
+
+  // This is the "Ignition Switch" for your website
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Fetch the menu items from the database
+    loadMenuFromSupabase(); 
+    
+    // 2. Start your other logic like highlighting the day
+    if (typeof highlightToday === "function") {
+        highlightToday();
+    }
+});
+ 
+   </script>
+ 
   <style>
     /* ... (I have kept your excellent CSS styling intact as it was visually perfect) ... */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
