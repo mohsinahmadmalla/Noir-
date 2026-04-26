@@ -64,34 +64,12 @@ function renderMenu(category) {
         </div>
     `).join('');
 }
-
-// ── 4. CART LOGIC ──
-let cart = [];
-function addToCart(category, id) {
-    const product = window.menuData[category].find(p => p.id === id);
-    cart.push(product);
-    document.getElementById('cartCount').innerText = cart.length;
-    showToast(`${product.name} added!`);
-}
-
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ── 5. STARTUP ──
+// ── 5. STARTUP (The Ignition Switch) ──
 document.addEventListener('DOMContentLoaded', () => {
-    loadMenuFromSupabase(); // This starts the chain reaction
-});
-
-  // This is the "Ignition Switch" for your website
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Fetch the menu items from the database
+    // This tells the browser to go get the menu from Supabase immediately
     loadMenuFromSupabase(); 
     
-    // 2. Start your other logic like highlighting the day
+    // This highlights the current day in your 'Hours' section
     if (typeof highlightToday === "function") {
         highlightToday();
     }
