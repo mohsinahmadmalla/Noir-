@@ -145,7 +145,7 @@ async function loadMenuFromSupabase() {
     if (error) { console.error(error); return; }
 
     window.menuData = {
-        coffee: data.filter(item => item.Category.toLowerCase() === 'coffee').map(item => ({
+        coffee: data.filter(item => item.category.toLowerCase() === 'coffee').map(item => ({
             id: item.id, name: item.Name, price: item.Price, emoji: item.Emoji, desc: "Premium Roast"
         })),
         food: data.filter(item => item.Category.toLowerCase() === 'food').map(item => ({
