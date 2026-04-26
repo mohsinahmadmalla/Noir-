@@ -81,14 +81,14 @@
     <script>
         // REPLACE THESE WITH YOUR ACTUAL KEYS
         const URL = 'https://jdiglozprfttehmcijtc.supabase.co';
-        const KEY = 'sb_publishable_xOGZncsDA-1YYitgam9KhA_nVLzoo_B';
+        const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkaWdsb3pwcmZ0dGVobWNpanRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNjQ5MzYsImV4cCI6MjA5Mjc0MDkzNn0.hTngMGloNsK0XTsBIUAvZQIzUSG65CZcWb56FFFhfmE';
         const sb = supabase.createClient(URL, KEY);
 
         let cart = [];
         window.fullMenu = { coffee: [], food: [] };
 
         async function startApp() {
-            const { data, error } = await sb.from('menu_items').select('*');
+            const { data, error } = await sb.from('menu_item').select('*');
             if (error) {
                 console.error("Connection Error:", error);
                 document.getElementById('menu-display').innerHTML = "<p>Please check your Supabase Keys.</p>";
