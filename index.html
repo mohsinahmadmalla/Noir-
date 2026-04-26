@@ -64,6 +64,31 @@ function renderMenu(category) {
         </div>
     `).join('');
 }
+
+ async function handleReservation(event) {
+    event.preventDefault(); // This stops the page from refreshing
+    
+    // 1. Get the values the user typed into the form
+    const booking = {
+        customer_name: document.getElementById('res-name').value,
+        phone: document.getElementById('res-phone').value,
+        guests: document.getElementById('res-guests').value,
+        date_time: document.getElementById('res-date').value
+    };
+
+    // 2. Send this data to your Supabase 'reservations' table
+    const { error } = await sb
+        .from('reservations')
+        .insert([booking]);
+
+    if (error) {
+        alert("Oops! Something went wrong: " + error.message);
+    } else {
+        alert("Table Reserved! We look forward to seeing you.");
+        event.target.reset(); // This clears the form for the next person
+    }
+}
+    
 // ── 5. STARTUP (The Ignition Switch) ──
 document.addEventListener('DOMContentLoaded', () => {
     // This tells the browser to go get the menu from Supabase immediately
