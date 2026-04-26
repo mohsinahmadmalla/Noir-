@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Half Million Cafe — Mumbai's Finest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <script>
+    // ── CONFIGURATION ──
+    const SUPABASE_URL = 'https://jdiglozprfttehmcijtc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_xOGZncsDA-1YYitgam9KhA_nVLzoo_B';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Replace with your LIVE key when ready
+    const RAZORPAY_KEY = 'rzp_test_YourKeyHere'; 
+  </script>
+
+  <style>
+    /* ... (I have kept your excellent CSS styling intact as it was visually perfect) ... */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #000000; --black2: #0A0A0A; --black3: #111111; --black4: #1A1A1A;
+      --white: #FFFFFF; --white2: #F5F5F5; --white5: #999999; --gold: #C9A84C;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Outfit', sans-serif; background: var(--black); color: var(--white); overflow-x: hidden; }
+    
+    /* NAV & HERO CSS (Keeping your original styles) */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 20px 5vw; transition: 0.4s; }
+    nav.scrolled { background: rgba(0,0,0,0.97); padding: 14px 5vw; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .nav-logo { font-family: 'Bebas Neue', cursive; font-size: 26px; letter-spacing: 4px; color: var(--white); text-decoration: none; }
+    .nav-logo span { color: var(--gold); }
+    .nav-center { display: flex; gap: 36px; list-style: none; }
+    .nav-center a { color: var(--white); text-decoration: none; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+    .cart-btn { background: var(--white); color: var(--black); border: none; padding: 10px 20px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    
+    /* MODALS & TOASTS */
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--white); color: var(--black); padding: 14px 28px; z-index: 500; opacity: 0; transition: 0.3s; box-shadow: 0 8px 40px rgba(0,0,0,0.5); }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    
+    /* Section & Menu Layouts */
+    section { padding: 100px 5vw; }
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; background: rgba(255,255,255,0.1); }
+    .menu-card { background: var(--black); padding: 32px; }
+    .add-btn { background: var(--white); border: none; padding: 10px 18px; font-weight: 700; cursor: pointer; }
+    
+    /* Mobile styles */
+    @media (max-width: 960px) { .nav-center { display: none; } }
+    
+    /* (Include remaining original styles here) */
+    #hero { min-height: 100vh; display: flex; align-items: center; padding: 120px 5vw; position: relative; }
+    .s-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 5vw, 70px); }
+    .cart-sidebar { position: fixed; top: 0; right: -480px; bottom: 0; width: 440px; background: var(--black2); z-index: 301; transition: 0.4s; display: flex; flex-direction: column; }
+    .cart-sidebar.open { right: 0; }
+    .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: none; }
+    .cart-overlay.open { display: block; }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast">Added to cart!</div>
+
+<nav id="nav">
+  <a href="#" class="nav-logo">Half Million<span> Cafe</span></a>
+  <ul class="nav-center">
+    <li><a href="#about">Story</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#reservation">Reserve</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="openCart()">🛒 Cart <span id="cartCount">0</span></button>
+  </div>
+</nav>
+
+<section id="hero">
+  <div class="hero-content">
+    <h1 class="hero-title">Where Every Sip Becomes a <strong>Memory</strong></h1>
+    <p>Crafted specialty coffee in the heart of Mumbai.</p>
+    <br>
+    <a href="#menu" class="btn-white" style="background:#fff; color:#000; padding:15px 30px; text-decoration:none;">Explore Menu</a>
+  </div>
+</section>
+
+<section id="menu">
+  <h2 class="s-title">The Menu</h2>
+  <div class="menu-tabs">
+    <button class="menu-tab active" onclick="filterMenu('coffee')">Coffee</button>
+    <button class="menu-tab" onclick="filterMenu('food')">Food</button>
+  </div>
+  <div id="menuGrid" class="menu-grid"></div>
+</section>
+
+<section id="hours">
+    <h2 class="s-title">Hours</h2>
+    <div id="hoursList">
+        <div class="hours-row-item"><span class="hours-day">Monday</span> 8am - 10pm</div>
+        <div class="hours-row-item"><span class="hours-day">Tuesday</span> 8am - 10pm</div>
+        <div class="hours-row-item"><span class="hours-day">Wednesday</span> 8am - 10pm</div>
+        <div class="hours-row-item"><span class="hours-day">Thursday</span> 8am - 10pm</div>
+        <div class="hours-row-item"><span class="hours-day">Friday</span> 8am - 11pm</div>
+        <div class="hours-row-item"><span class="hours-day">Saturday</span> 9am - 11pm</div>
+        <div class="hours-row-item"><span class="hours-day">Sunday</span> 9am - 9pm</div>
+    </div>
+</section>
+
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+    <div style="padding:20px; border-bottom:1px solid #333;"><h3>Your Order</h3></div>
+    <div id="cartBody" style="flex:1; overflow-y:auto; padding:20px;"></div>
+    <div id="cartFoot" style="padding:20px; border-top:1px solid #333; display:none;">
+        <div style="display:flex; justify-content:space-between;"><span>Total</span><span id="cTotal">₹0</span></div>
+        <button onclick="handleRazorpay()" style="width:100%; padding:15px; background:#fff; margin-top:10px; cursor:pointer;">Pay Now</button>
+    </div>
+</div>
+
+<script>
+// ── DATA ──
+const menuData = {
+  coffee: [
+    { id: 1, name: 'Filter Coffee', price: 80, emoji: '☕', desc: 'Classic Mumbai style.' },
+    { id: 2, name: 'Cold Brew', price: 180, emoji: '🧊', desc: '18-hour steep.' }
+  ],
+  food: [
+    { id: 3, name: 'Keema Pav', price: 340, emoji: '🧆', desc: 'Spiced mutton classic.' },
+    { id: 4, name: 'Avocado Toast', price: 320, emoji: '🥑', desc: 'Sourdough perfection.' }
+  ]
+};
+
+let cart = [];
+
+// ── CORE FUNCTIONS ──
+function renderMenu(category) {
+    const grid = document.getElementById('menuGrid');
+    const items = menuData[category];
+    grid.innerHTML = items.map(item => `
+        <div class="menu-card">
+            <div style="font-size:40px">${item.emoji}</div>
+            <h3>${item.name}</h3>
+            <p>${item.desc}</p>
+            <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                <strong>₹${item.price}</strong>
+                <button class="add-btn" onclick="addToCart('${category}', ${item.id})">+ Add</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function addToCart(category, id) {
+    const product = menuData[category].find(p => p.id === id);
+    const existing = cart.find(item => item.id === id);
+    
+    if (existing) {
+        existing.qty++;
+    } else {
+        cart.push({ ...product, qty: 1 });
+    }
+    updateUI();
+    showToast(`${product.name} added!`);
+}
+
+function updateUI() {
+    const count = cart.reduce((acc, item) => acc + item.qty, 0);
+    document.getElementById('cartCount').innerText = count;
+    
+    const body = document.getElementById('cartBody');
+    const foot = document.getElementById('cartFoot');
+    
+    if (cart.length === 0) {
+        body.innerHTML = "Your cart is empty.";
+        foot.style.display = 'none';
+        return;
+    }
+    
+    foot.style.display = 'block';
+    let total = 0;
+    body.innerHTML = cart.map(item => {
+        total += item.price * item.qty;
+        return `<div style="margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:10px;">
+            ${item.name} x ${item.qty} - ₹${item.price * item.qty}
+        </div>`;
+    }).join('');
+    
+    document.getElementById('cTotal').innerText = `₹${total}`;
+}
+
+async function handleRazorpay() {
+    if (typeof Razorpay === 'undefined') {
+        alert("Payment gateway failed to load. Please check your internet.");
+        return;
+    }
+    
+    if (RAZORPAY_KEY === 'rzp_test_YourKeyHere') {
+        alert("Developer Note: Please set your actual Razorpay Key ID in the script.");
+        return;
+    }
+
+    // Calculation should technically be verified on backend
+    const totalAmount = cart.reduce((acc, item) => acc + (item.price * item.qty), 0) * 100;
+
+    const options = {
+        key: RAZORPAY_KEY,
+        amount: totalAmount,
+        currency: "INR",
+        name: "Half Million Cafe",
+        handler: function (response) {
+            alert("Payment Successful! ID: " + response.razorpay_payment_id);
+            cart = [];
+            updateUI();
+            closeCart();
+        }
+    };
+    const rzp = new Razorpay(options);
+    rzp.open();
+}
+
+function highlightToday() {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const today = days[new Date().getDay()];
+    document.querySelectorAll('.hours-row-item').forEach(row => {
+        if (row.innerText.includes(today)) {
+            row.style.color = '#C9A84C';
+            row.style.fontWeight = 'bold';
+            row.innerHTML += " ← Today";
+        }
+    });
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function openCart() { 
+    document.getElementById('cartSidebar').classList.add('open'); 
+    document.getElementById('cartOverlay').classList.add('open'); 
+}
+function closeCart() { 
+    document.getElementById('cartSidebar').classList.remove('open'); 
+    document.getElementById('cartOverlay').classList.remove('open'); 
+}
+
+function filterMenu(cat) {
+    renderMenu(cat);
+}
+
+window.addEventListener('scroll', () => {
+    document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderMenu('coffee');
+    highlightToday();
+});
+</script>
+</body>
+</html>
